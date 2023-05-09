@@ -9,5 +9,10 @@ Future<void> main() async {
 
   await Env.instance.load();
 
-  return runApp(ModularApp(module: AppModule(), child: const AppWidget()));
+  return runApp(
+    ModularApp(
+      module: AppModule(),
+      child: const AppWidget(),
+    ),
+  );
 }
