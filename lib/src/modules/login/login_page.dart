@@ -11,7 +11,7 @@ import '../../core/ui/styles/text_styles.dart';
 import 'login_controller.dart';
 
 class LoginPage extends StatefulWidget {
-  const LoginPage({Key? key}) : super(key: key);
+  const LoginPage({super.key});
 
   @override
   State<LoginPage> createState() => _LoginPageState();
@@ -26,23 +26,26 @@ class _LoginPageState extends State<LoginPage> with Loader, Messages {
 
   @override
   void initState() {
-    statusReactionDisposer = reaction((_) => controller.loginStatus, (status) {
-      switch (status) {
-        case LoginStateStatus.initial:
-          break;
-        case LoginStateStatus.loading:
-          showLoader();
-          break;
-        case LoginStateStatus.success:
-          hideLoader();
-          Modular.to.navigate('/');
-          break;
-        case LoginStateStatus.error:
-          hideLoader();
-          showError(controller.loginMessageError ?? 'Erro');
-          break;
-      }
-    });
+    statusReactionDisposer = reaction(
+      (_) => controller.loginStatus,
+      (status) {
+        switch (status) {
+          case LoginStateStatus.initial:
+            break;
+          case LoginStateStatus.loading:
+            showLoader();
+            break;
+          case LoginStateStatus.success:
+            hideLoader();
+            Modular.to.navigate('/');
+            break;
+          case LoginStateStatus.error:
+            hideLoader();
+            showError(controller.loginMessageError ?? 'Erro');
+            break;
+        }
+      },
+    );
     super.initState();
   }
 
@@ -50,13 +53,22 @@ class _LoginPageState extends State<LoginPage> with Loader, Messages {
   void dispose() {
     emailEC.dispose();
     passwordEC.dispose();
+    statusReactionDisposer();
     super.dispose();
+  }
+
+  void _formSubmit() {
+    final formValid = formKey.currentState?.validate() ?? false;
+    if (formValid) {
+      controller.login(emailEC.text, passwordEC.text);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final screenShortestSide = context.screenShortestSide;
     final screenWidth = context.screenWidth;
+
     return Scaffold(
       backgroundColor: context.colors.black,
       body: Form(
@@ -79,28 +91,23 @@ class _LoginPageState extends State<LoginPage> with Loader, Messages {
               ),
             ),
             Container(
-              height: screenShortestSide * .5,
+              width: screenShortestSide * .5,
               padding: EdgeInsets.only(top: context.percentHeight(.10)),
-              decoration: const BoxDecoration(
-                image: DecorationImage(
-                  image: AssetImage(
-                    'assets/images/logo.png',
-                  ),
-                ),
-              ),
+              child: Image.asset('assets/images/logo.png'),
             ),
-            Center(
-              child: Container(
-                constraints: BoxConstraints(
-                  maxWidth: context.percentWidth(screenWidth < 1300 ? .7 : .3),
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(
-                    10,
+            Align(
+              alignment: Alignment.center,
+              child: SingleChildScrollView(
+                child: Container(
+                  constraints: BoxConstraints(
+                    maxWidth: context.percentWidth(
+                      screenWidth < 1300 ? .7 : .3,
+                    ),
                   ),
-                ),
-                child: SingleChildScrollView(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                   child: Padding(
                     padding: const EdgeInsets.all(30),
                     child: Column(
@@ -125,25 +132,23 @@ class _LoginPageState extends State<LoginPage> with Loader, Messages {
                         ),
                         TextFormField(
                           controller: emailEC,
+                          onFieldSubmitted: (_) => _formSubmit(),
+                          decoration: const InputDecoration(labelText: 'Email'),
                           validator: Validatorless.multiple([
-                            Validatorless.required('E-mail é obrigatório'),
-                            Validatorless.email('E-mail é inválido'),
+                            Validatorless.required('E-mail obrigatório'),
+                            Validatorless.email('E-mail inválido'),
                           ]),
-                          decoration: const InputDecoration(
-                            label: Text('E-mail'),
-                          ),
                         ),
                         const SizedBox(
                           height: 20,
                         ),
                         TextFormField(
                           controller: passwordEC,
+                          onFieldSubmitted: (_) => _formSubmit(),
                           obscureText: true,
+                          decoration: const InputDecoration(labelText: 'Senha'),
                           validator:
-                              Validatorless.required('Senha é obrigatório'),
-                          decoration: const InputDecoration(
-                            label: Text('Senha'),
-                          ),
+                              Validatorless.required('Senha obrigatória'),
                         ),
                         const SizedBox(
                           height: 30,
@@ -152,23 +157,16 @@ class _LoginPageState extends State<LoginPage> with Loader, Messages {
                           width: double.infinity,
                           height: 50,
                           child: ElevatedButton(
-                            onPressed: () {
-                              final formValid =
-                                  formKey.currentState?.validate() ?? false;
-
-                              if (formValid) {
-                                controller.login(emailEC.text, passwordEC.text);
-                              }
-                            },
+                            onPressed: _formSubmit,
                             child: const Text('Entrar'),
                           ),
-                        )
+                        ),
                       ],
                     ),
                   ),
                 ),
               ),
-            ),
+            )
           ],
         ),
       ),

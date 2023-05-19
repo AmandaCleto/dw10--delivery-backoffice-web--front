@@ -20,7 +20,7 @@ class AuthRepositoryImpl implements AuthRepository {
         data: {
           'email': email,
           'password': password,
-          'admin': true,
+          'admin': false,
         },
       );
 
